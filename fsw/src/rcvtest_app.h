@@ -42,6 +42,8 @@
 #include "rcvtest_app_msgids.h"
 #include "rcvtest_app_msg.h"
 
+#include "libs/spacey.h"
+
 /***********************************************************************/
 #define RCVTEST_APP_PIPE_DEPTH 32 /* Depth of the Command Pipe for Application */
 
@@ -115,5 +117,8 @@ void  RCVTEST_APP_GetCrc(const char *TableName);
 int32 RCVTEST_APP_TblValidationFunc(void *TblData);
 
 bool RCVTEST_APP_VerifyCmdLength(CFE_MSG_Message_t *MsgPtr, size_t ExpectedLength);
+
+void RCVTEST_APP_MSGPRINT_TEST(const HYUN_APP_TUTORIAL_t *data);
+void RCVTEST_APP_RcvDatafromHYUN(const SPACEY_LIB_MSG_CHAR20_t *data);
 
 #endif /* RCVTEST_APP_H */

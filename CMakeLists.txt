@@ -21,3 +21,6 @@ add_cfe_tables(rcvtestappTable fsw/tables/rcvtest_app_tbl.c)
 if (ENABLE_UNIT_TESTS)
   add_subdirectory(unit-test)
 endif (ENABLE_UNIT_TESTS)
+
+# This is for Visual Studio Code C/C++ include path settings
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

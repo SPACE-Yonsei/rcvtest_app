@@ -45,6 +45,20 @@
 */
 RCVTEST_APP_Data_t RCVTEST_APP_Data;
 
+/*
+User Made Function
+*/
+void RCVTEST_APP_RcvDatafromHYUN(const SPACEY_LIB_MSG_CHAR20_t *data)
+{
+    const SPACEY_LIB_MSG_CHAR20_Payload_t *PData = &data->Payload;
+    char rcvdata[20];
+    printf("Receive Successful!\n");
+    (void)CFE_SB_MessageStringGet(rcvdata, PData->TextData, "", sizeof(rcvdata),sizeof(PData->TextData));
+    printf("%s\n", rcvdata);
+    return;
+}
+
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * *  * * * * **/
 /* RCVTEST_APP_Main() -- Application entry point and main process loop         */
 /*                                                                            */
@@ -100,7 +114,7 @@ void RCVTEST_APP_Main(void)
 
             RCVTEST_APP_Data.RunStatus = CFE_ES_RunStatus_APP_ERROR;
         }
-    }
+    }  
 
     /*
     ** Performance Log Exit Stamp
@@ -182,7 +196,7 @@ int32 RCVTEST_APP_Init(void)
     /*
     Subscribe to SB test request data sent by hyun_app
     */
-    status = CFE_SB_Subscribe(HYUN_APP_MID_SBTEST_REQ, RCVTEST_APP_Data.CommandPipe);
+    //status = CFE_SB_Subscribe(HYUN_APP_MID_SBTEST_REQ, RCVTEST_APP_Data.CommandPipe);
     if (status != CFE_SUCCESS)
     {
         CFE_ES_WriteToSysLog("Rcvtest app: Error Subscribing to HK request, RC = 0x%08lX\n", (unsigned long)status);
@@ -209,7 +223,13 @@ int32 RCVTEST_APP_Init(void)
 
         return (status);
     }
+	status = CFE_SB_Subscribe(HYUN_APP_MID_SENDTORCVTEST_RES, RCVTEST_APP_Data.CommandPipe);
+    if (status != CFE_SUCCESS)
+    {
+        CFE_ES_WriteToSysLog("Rcvtest app: Error Subscribing to Command, RC = 0x%08lX\n", (unsigned long)status);
 
+        return (status);
+    }
     /*
     ** Register Table(s)
     */
@@ -246,6 +266,7 @@ void RCVTEST_APP_ProcessCommandPacket(CFE_SB_Buffer_t *SBBufPtr)
     CFE_SB_MsgId_t MsgId = CFE_SB_INVALID_MSG_ID;
 
     CFE_MSG_GetMsgId(&SBBufPtr->Msg, &MsgId);
+    printf("rcvtest app process MID = 0x%x\n", (unsigned int)CFE_SB_MsgIdToValue(MsgId));
 
     switch (MsgId)
     {
@@ -258,6 +279,9 @@ void RCVTEST_APP_ProcessCommandPacket(CFE_SB_Buffer_t *SBBufPtr)
             break;
         case HYUN_APP_MID_SBTEST_REQ:
             RCVTEST_APP_ProcessTestInputData(SBBufPtr);
+            break;
+        case HYUN_APP_MID_SENDTORCVTEST_RES:
+            RCVTEST_APP_RcvDatafromHYUN((const SPACEY_LIB_MSG_CHAR20_t *)SBBufPtr);
             break;
         default:
             CFE_EVS_SendEvent(RCVTEST_APP_INVALID_MSGID_ERR_EID, CFE_EVS_EventType_ERROR,
@@ -277,8 +301,19 @@ void RCVTEST_APP_ProcessCommandPacket(CFE_SB_Buffer_t *SBBufPtr)
 void RCVTEST_APP_ProcessTestInputData(CFE_SB_Buffer_t *SBBufPtr)
 {
     printf("RCVTESTAPP : RCV SUCCESS\n");
+    
+    //HYUN_APP_TUTORIAL_t (HYUN_APP_TUTORIAL_t *)SBBufPtr;
+    RCVTEST_APP_MSGPRINT_TEST((const HYUN_APP_TUTORIAL_t *)SBBufPtr);
     return;
 }
+
+void RCVTEST_APP_MSGPRINT_TEST(const HYUN_APP_TUTORIAL_t *data)
+{
+    const HYUN_APP_TUTORIAL_Payload_t *DataPayload = &data->Payload;
+    printf("%s\n", DataPayload->TextData);
+    return;
+}
+
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 /*                                                                            */
