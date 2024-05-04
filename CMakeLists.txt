@@ -2,6 +2,8 @@ project(CFE_RCVTEST_APP C)
 
 include_directories(fsw/mission_inc)
 include_directories(fsw/platform_inc)
+include_directories(${hk_MISSION_DIR}/fsw/platform_inc)
+include_directories(${hyun_app_MISSION_DIR}/fsw/platform_inc)
 
 # Create the app module
 add_cfe_app(rcvtest_app fsw/src/rcvtest_app.c)
@@ -10,7 +12,6 @@ add_cfe_app(rcvtest_app fsw/src/rcvtest_app.c)
 # to call library-provided functions
 add_cfe_app_dependency(rcvtest_app sample_lib)
 add_cfe_app_dependency(rcvtest_app spacey_lib)
-
 # Add table
 add_cfe_tables(rcvtestappTable fsw/tables/rcvtest_app_tbl.c)
 

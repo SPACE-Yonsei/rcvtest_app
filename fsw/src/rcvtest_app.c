@@ -33,10 +33,12 @@
 #include "rcvtest_app.h"
 #include "rcvtest_app_table.h"
 
+#include "hk_msgids.h"
+
 /* The sample_lib module provides the SAMPLE_LIB_Function() prototype */
 #include <string.h>
 #include "sample_lib.h"
-
+#include "hyun_app_msgids.h"
 /* This spacey.h provides essential data for CANSAT AAS 2024 mission */
 #include "libs/spacey.h"
 
@@ -50,14 +52,21 @@ User Made Function
 */
 void RCVTEST_APP_RcvDatafromHYUN(const SPACEY_LIB_MSG_CHAR20_t *data)
 {
+    /*
     const SPACEY_LIB_MSG_CHAR20_Payload_t *PData = &data->Payload;
     char rcvdata[20];
-    printf("Receive Successful!\n");
     (void)CFE_SB_MessageStringGet(rcvdata, PData->TextData, "", sizeof(rcvdata),sizeof(PData->TextData));
-    printf("%s\n", rcvdata);
+    printf("%s\n", rcvdata);*/
     return;
 }
 
+void RCVTEST_APP_CHECK_COMBINED_HK_DATA(const HK_COMBINED_PCK_1_STRUCTURE_t *data)
+{
+    printf("%ld\n", sizeof(data->TlmHeader));
+    printf("%u %u %u\n", data->ES_CFECoreChecksum, data->EVS_MessageFormatMode, data->TIME_ClockStateFlags);
+    
+    return;
+}
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * *  * * * * **/
 /* RCVTEST_APP_Main() -- Application entry point and main process loop         */
@@ -204,9 +213,18 @@ int32 RCVTEST_APP_Init(void)
     }
 
     /*
+    Subscribe to HouseKeeper Combined Packet MID
+    */
+   status = CFE_SB_Subscribe(HK_COMBINED_PKT1_MID, RCVTEST_APP_Data.CommandPipe);
+    if (status != CFE_SUCCESS)
+    {
+        CFE_ES_WriteToSysLog("Rcvtest app: Error Subscribing to HK request, RC = 0x%08lX\n", (unsigned long)status);
+        return (status);
+    }
+    /*
     ** Subscribe to Housekeeping request commands
     */
-    status = CFE_SB_Subscribe(SPACEY_MID_HOUSEKEEPING_REQ, RCVTEST_APP_Data.CommandPipe);
+    status = CFE_SB_Subscribe(RCVTEST_APP_MID_HOUSEKEEPING_REQ, RCVTEST_APP_Data.CommandPipe);
     if (status != CFE_SUCCESS)
     {
         CFE_ES_WriteToSysLog("Rcvtest app: Error Subscribing to HK request, RC = 0x%08lX\n", (unsigned long)status);
@@ -216,7 +234,7 @@ int32 RCVTEST_APP_Init(void)
     /*
     ** Subscribe to ground command packets
     */
-    status = CFE_SB_Subscribe(RCVTEST_APP_CMD_MID, RCVTEST_APP_Data.CommandPipe);
+    status = CFE_SB_Subscribe(RCVTEST_APP_MID_GROUNDCMD_REQ, RCVTEST_APP_Data.CommandPipe);
     if (status != CFE_SUCCESS)
     {
         CFE_ES_WriteToSysLog("Rcvtest app: Error Subscribing to Command, RC = 0x%08lX\n", (unsigned long)status);
@@ -266,15 +284,14 @@ void RCVTEST_APP_ProcessCommandPacket(CFE_SB_Buffer_t *SBBufPtr)
     CFE_SB_MsgId_t MsgId = CFE_SB_INVALID_MSG_ID;
 
     CFE_MSG_GetMsgId(&SBBufPtr->Msg, &MsgId);
-    printf("rcvtest app process MID = 0x%x\n", (unsigned int)CFE_SB_MsgIdToValue(MsgId));
+    //printf("rcvtest app process MID = 0x%x\n", (unsigned int)CFE_SB_MsgIdToValue(MsgId));
 
     switch (MsgId)
     {
-        case RCVTEST_APP_CMD_MID:
+        case RCVTEST_APP_MID_GROUNDCMD_REQ:
             RCVTEST_APP_ProcessGroundCommand(SBBufPtr);
             break;
-
-        case SPACEY_MID_HOUSEKEEPING_REQ:
+        case RCVTEST_APP_MID_HOUSEKEEPING_REQ:
             RCVTEST_APP_ReportHousekeeping((CFE_MSG_CommandHeader_t *)SBBufPtr);
             break;
         case HYUN_APP_MID_SBTEST_REQ:
@@ -282,6 +299,11 @@ void RCVTEST_APP_ProcessCommandPacket(CFE_SB_Buffer_t *SBBufPtr)
             break;
         case HYUN_APP_MID_SENDTORCVTEST_RES:
             RCVTEST_APP_RcvDatafromHYUN((const SPACEY_LIB_MSG_CHAR20_t *)SBBufPtr);
+            break;
+        case HK_COMBINED_PKT1_MID:
+            printf("HK combined PCK RCV\n");
+            RCVTEST_APP_CHECK_COMBINED_HK_DATA((const HK_COMBINED_PCK_1_STRUCTURE_t *)SBBufPtr);
+            
             break;
         default:
             CFE_EVS_SendEvent(RCVTEST_APP_INVALID_MSGID_ERR_EID, CFE_EVS_EventType_ERROR,

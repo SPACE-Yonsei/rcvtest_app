@@ -120,5 +120,6 @@ bool RCVTEST_APP_VerifyCmdLength(CFE_MSG_Message_t *MsgPtr, size_t ExpectedLengt
 
 void RCVTEST_APP_MSGPRINT_TEST(const HYUN_APP_TUTORIAL_t *data);
 void RCVTEST_APP_RcvDatafromHYUN(const SPACEY_LIB_MSG_CHAR20_t *data);
+void RCVTEST_APP_CHECK_COMBINED_HK_DATA(const HK_COMBINED_PCK_1_STRUCTURE_t *data);
 
 #endif /* RCVTEST_APP_H */

@@ -32,11 +32,11 @@
 #define RCVTEST_APP_MSGIDS_H
 
 /* V1 Command Message IDs must be 0x18xx */
-#define RCVTEST_APP_CMD_MID     0x1882
-#define RCVTEST_APP_SEND_HK_MID 0x1883
-#define RCVTEST_APP_RCVTEST_MID 0x1830 // 앱간 통신 연습용. 실제 Mission에 쓰이지 않을 것!
+#define RCVTEST_APP_MID_HOUSEKEEPING_REQ	0x1815
+#define RCVTEST_APP_MID_GROUNDCMD_REQ	0x1816
+#define RCVTEST_APP_RCVTEST_MID 0x1817 // 앱간 통신 연습용. 실제 Mission에 쓰이지 않을 것!
 
 /* V1 Telemetry Message IDs must be 0x08xx */
-#define RCVTEST_APP_HK_TLM_MID 0x0883
+#define RCVTEST_APP_MID_HOUSEKEEPING_RES 0x0817
 
 #endif /* RCVTEST_APP_MSGIDS_H */
