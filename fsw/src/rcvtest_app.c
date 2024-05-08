@@ -215,7 +215,7 @@ int32 RCVTEST_APP_Init(void)
     /*
     Subscribe to HouseKeeper Combined Packet MID
     */
-   status = CFE_SB_Subscribe(HK_COMBINED_PKT1_MID, RCVTEST_APP_Data.CommandPipe);
+   status = CFE_SB_Subscribe(HK_MID_COMBINED_PKT1_RES, RCVTEST_APP_Data.CommandPipe);
     if (status != CFE_SUCCESS)
     {
         CFE_ES_WriteToSysLog("Rcvtest app: Error Subscribing to HK request, RC = 0x%08lX\n", (unsigned long)status);
@@ -300,7 +300,7 @@ void RCVTEST_APP_ProcessCommandPacket(CFE_SB_Buffer_t *SBBufPtr)
         case HYUN_APP_MID_SENDTORCVTEST_RES:
             RCVTEST_APP_RcvDatafromHYUN((const SPACEY_LIB_MSG_CHAR20_t *)SBBufPtr);
             break;
-        case HK_COMBINED_PKT1_MID:
+        case HK_MID_COMBINED_PKT1_RES:
             printf("HK combined PCK RCV\n");
             RCVTEST_APP_CHECK_COMBINED_HK_DATA((const HK_COMBINED_PCK_1_STRUCTURE_t *)SBBufPtr);
             
